@@ -7,3 +7,6 @@ Thumbs.db
 .idea/
 *.code-workspace
 bower_components/
+venv
+*.pyc
+*.env
