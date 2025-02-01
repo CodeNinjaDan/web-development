@@ -127,3 +127,36 @@ def create_blog_post(user):
 new_user = User("angela")
 new_user.is_logged_in = True
 create_blog_post(new_user)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# .__name__ prints the name of the function being called.
+# if __name__ == "__main__": --> does something only if the main file isn't being run as an import
+# you can give it different functions if it's being run as ann import
+
+def my_function():
+    print("Function is executing")
+
+if __name__ == "__main__":
+    my_function()  # This will only run when the script is run directly
+    print("Script is running as main program")
+else:
+    print("Script is being imported as a module")
+
+
+def logging_decorator(func):
+    def wrapper(*args):
+        print(f"You called {func.__name__}{args}")
+        result = func(*args)
+        print(f"It returned: {result}")
+        return result
+
+    return wrapper
+
+
+@logging_decorator
+def a_function(*args):
+    return sum(args)
+
+
+a_function(1, 2, 3)
