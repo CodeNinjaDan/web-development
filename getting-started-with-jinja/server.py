@@ -20,12 +20,6 @@ def name_age(name):
     age_response = requests.get(age_url)
     gender_response = requests.get(gender_url)
 
-    age_data = age_response.json()
-    gender_data = gender_response.json()
-
-    # age = age_data["age"]
-    # gender = gender_data["gender"]
-
     age = age_response.json().get('age')
     gender = gender_response.json().get('gender')
 
