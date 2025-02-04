@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,39 +12,18 @@
     <div class="top">
         <div class="title"><h1>My Blog</h1></div>
     </div>
+
+    {% for post in all_posts: %}
     <div class="content">
-        <div class="card">
-           {% for blog_post in posts: %}
-                {% if blog_post["id"] == 1: %}
-                    <h2>{{ blog_post["title"] }}</h2>
-                    <p class="text">{{ blog_post["subtitle"] }}</p>
-                {% endif %}
-            {% endfor %}
-            <a href="{{ url_for('get_blog', num=1) }}">Read</a>
+        <div class="card ">
+            <h2>{{ post.title }}</h2>
+            <p>{{ post.subtitle }}</p>
+            <a href="{{ url_for('show_post', index=post.id) }}">Read</a>
         </div>
+
     </div>
-    <div class="content">
-        <div class="card">
-            {% for blog_post in posts: %}
-                {% if blog_post["id"] == 2: %}
-                    <h2>{{ blog_post["title"] }}</h2>
-                    <p class="text">{{ blog_post["subtitle"] }}</p>
-                {% endif %}
-            {% endfor %}
-            <a href="#">Read</a>
-        </div>
-    </div>
-    <div class="content">
-        <div class="card">
-            {% for blog_post in posts: %}
-                {% if blog_post["id"] == 3: %}
-                    <h2>{{ blog_post["title"] }}</h2>
-                    <p class="text">{{ blog_post["subtitle"] }}</p>
-                {% endif %}
-            {% endfor %}
-            <a href="#">Read</a>
-        </div>
-    </div>
+    {% endfor %}
+
 </div>
 </body>
 <footer>
