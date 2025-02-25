@@ -1,10 +1,13 @@
 from flask import Flask, render_template
 import requests
+from types import SimpleNamespace
 
 app = Flask(__name__)
 
-posts = requests.get("https://api.npoint.io/5b776c78600bd91b0e9a").json()
+posts_dicts = requests.get("https://api.npoint.io/5b776c78600bd91b0e9a").json()
 
+#Convert dictionaries to objects with attribute access to ba able to use dot notation
+posts = [SimpleNamespace(**post) for post in posts_dicts]
 
 @app.route("/")
 def home():
