@@ -21,12 +21,12 @@ def about():
 def contact():
     if request.method == "POST":
         form_data = request.form
-        for field in ["name", "email", "phone", "message"]:
-            if field not in form_data or not form_data[field]:
-                return render_template("contact.html", error="All fields are required.")
-        return receive_data()
-
-    return render_template("contact.html")
+        print(form_data["name"])
+        print(form_data["email"])
+        print(form_data["phone"])
+        print(form_data["message"])
+        return render_template("contact.html", msg_sent=True)
+    return render_template("contact.html", msg_sent=False)
 
 @app.route("/post/<int:index>")
 def show_post(index):
@@ -35,11 +35,6 @@ def show_post(index):
         if blog_post.id == index:
             requested_post = blog_post
     return render_template("post.html", post=requested_post)
-
-app.route("/form-entry", methods=["POST"])
-def receive_data():
-    return f"<h1>Successfully sent your message</h1>"
-
 
 
 if __name__ == "__main__":
