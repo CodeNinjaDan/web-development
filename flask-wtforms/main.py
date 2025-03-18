@@ -23,7 +23,7 @@ def login():
     login_form = LoginForm()
     if login_form.validate_on_submit():
         #Process data if form is valid
-        if login_form.email.data == "admin@email.com":
+        if login_form.email.data == "admin@email.com" and login_form.password.data == "12345678":
             return render_template('success.html')
         else:
             return render_template('denied.html')
