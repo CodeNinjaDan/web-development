@@ -9,7 +9,7 @@
 
     {% block styles %}
     <!-- Load Bootstrap-Flask CSS -->
-
+    {{ bootstrap.load_css() }}
     <!-- Link to the styles.css to apply styling to all the child templates.-->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     {% endblock %}
