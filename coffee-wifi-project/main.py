@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap5
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField
@@ -42,9 +42,20 @@ def home():
 def add_cafe():
     form = CafeForm()
     if form.validate_on_submit():
-        print("True")
-    # Make the form write a new row into cafe-data.csv
-    # with   if form.validate_on_submit()
+        #Might need to troubleshoot incase file was written and is being used on a different OS
+        # because different OS' use different line endings
+        with open('cafe-data.csv', mode='a', encoding='utf-8', newline='') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerow([
+                form.cafe.data,
+                form.location.data,
+                form.open_time.data,
+                form.close_time.data,
+                form.coffee_rating.data,
+                form.wifi.data,
+                form.power.data
+            ])
+        return redirect(url_for('cafes'))
     return render_template('add.html', form=form)
 
 
