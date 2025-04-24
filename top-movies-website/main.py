@@ -9,19 +9,43 @@ from wtforms.validators import DataRequired
 import requests
 
 
+class Base(DeclarativeBase):
+    pass
+
+db = SQLAlchemy(model_class=Base)
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movies.db'
+db.init_app(app)
 Bootstrap5(app)
 
-# CREATE DB
+
+class Movie(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    year: Mapped[int] = mapped_column(Integer, nullable=False)
+    description: Mapped[str] = mapped_column(String(250), nullable=False)
+    rating: Mapped[float] = mapped_column(Float, nullable=False)
+    ranking: Mapped[int] = mapped_column(Integer, nullable=False)
+    review: Mapped[str] = mapped_column(String(250), nullable=False)
+    img_url: Mapped[str] = mapped_column(String(250), nullable=False)
+
+# with app.app_context():
+#     db.create_all()
 
 
-# CREATE TABLE
 
+# with app.app_context():
+#     add_movie = Movie(**movie)
+#     db.session.add(add_movie)
+#     db.session.commit()
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    result = db.session.execute(db.select(Movie).order_by(Movie.id))
+    movies = result.scalars()
+    return render_template("index.html", movies=movies)
 
 
 if __name__ == '__main__':
