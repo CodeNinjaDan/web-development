@@ -48,5 +48,33 @@ def home():
     return render_template("index.html", movies=movies)
 
 
+class RateMovieForm(FlaskForm):
+    # Add render_kw{} to set placholders dynamically
+    rating = StringField("Your rating out of 10", render_kw={})
+    review = StringField("Your rating", render_kw={})
+    submit = SubmitField("Done")
+
+
+@app.route("/edit/<int:id>", methods=["GET", "POST"])
+def edit(id):
+    movie_to_update = db.get_or_404(Movie, id)
+    # Instantiate without pre-populating
+    edit_form = RateMovieForm()
+
+    # Pre-populate the form
+    # edit_form = RateMovieForm(obj=movie_to_update)
+
+    if edit_form.validate_on_submit():
+        movie_to_update.rating = float(edit_form.rating.data)
+        movie_to_update.review = edit_form.review.data
+        db.session.commit()
+        return redirect(url_for('home'))
+
+    elif request.method == "GET":
+        # Set placeholders for GET requests
+        edit_form.rating.render_kw["placeholder"] = movie_to_update.rating
+        edit_form.review.render_kw["placeholder"] = movie_to_update.review
+
+    return render_template('edit.html', movie=movie_to_update, form=edit_form)
 if __name__ == '__main__':
     app.run(debug=True)
