@@ -13,3 +13,4 @@ venv
 __pycache__/
 *.db
 *instance/
+/home/dan/web-development/top-movies-website/fixes.py

@@ -7,6 +7,10 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Base(DeclarativeBase):
@@ -20,6 +24,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movies.db'
 db.init_app(app)
 Bootstrap5(app)
 
+MOVIE_API_KEY = os.getenv("TMDB_API_KEY")
+MOVIE_DB_SEARCH_URL = "https://api.themoviedb.org/3/search/movie"
+MOVIE_DB_IMAGE_URL = "https://image.tmdb.org/t/p/w500"
+
+headers = {
+    "accept": "application/json",
+    "Authorization": MOVIE_API_KEY
+}
 
 class Movie(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -35,12 +47,6 @@ class Movie(db.Model):
 #     db.create_all()
 
 
-
-# with app.app_context():
-#     add_movie = Movie(**movie)
-#     db.session.add(add_movie)
-#     db.session.commit()
-
 @app.route("/")
 def home():
     result = db.session.execute(db.select(Movie).order_by(Movie.id))
@@ -55,7 +61,7 @@ class RateMovieForm(FlaskForm):
     submit = SubmitField("Done")
 
 class AddMovieForm(FlaskForm):
-    add = StringField("Movie Title")
+    add = StringField("Movie Title", validators=[DataRequired()])
     submit = SubmitField("Add movie")
 
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
@@ -91,11 +97,38 @@ def delete():
     return redirect(url_for('home'))
 
 
-@app.route("/add")
+@app.route("/add", methods=["GET", "POST"])
 def add():
     added_movie = AddMovieForm()
 
+    if added_movie.validate_on_submit():
+        movie_title = added_movie.add.data
+        response = requests.get(MOVIE_DB_SEARCH_URL, headers=headers, params={"query": movie_title})
+        data = response.json()['results']
+        return render_template('select.html', options=data)
+
     return render_template('add.html', form=added_movie)
+
+
+@app.route("/find")
+def get_movie():
+    movie_api_id = request.args.get('id')
+
+    if movie_api_id:
+        movie_api_url = f"{MOVIE_DB_SEARCH_URL}/{movie_api_id}"
+        response = requests.get(movie_api_url, headers=headers)
+        data = response.json()
+        new_movie = Movie(
+            title=data["title"],
+            year=data["release_date"].split("-")[0],
+            img_url=f"{MOVIE_DB_IMAGE_URL}{data['poster_path']}",
+            description=data["overview"]
+        )
+        db.session.add(new_movie)
+        db.session.commit()
+
+        return redirect(url_for('home'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
