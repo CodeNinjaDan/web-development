@@ -54,6 +54,9 @@ class RateMovieForm(FlaskForm):
     review = StringField("Your rating", render_kw={})
     submit = SubmitField("Done")
 
+class AddMovieForm(FlaskForm):
+    add = StringField("Movie Title")
+    submit = SubmitField("Add movie")
 
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
 def edit(id):
@@ -76,5 +79,23 @@ def edit(id):
         edit_form.review.render_kw["placeholder"] = movie_to_update.review
 
     return render_template('edit.html', movie=movie_to_update, form=edit_form)
+
+@app.route("/delete")
+def delete():
+    movie_id = request.args.get('id')
+
+    movie_to_delete = db.get_or_404(Movie, movie_id)
+    db.session.delete(movie_to_delete)
+    db.session.commit()
+
+    return redirect(url_for('home'))
+
+
+@app.route("/add")
+def add():
+    added_movie = AddMovieForm()
+
+    return render_template('add.html', form=added_movie)
+
 if __name__ == '__main__':
     app.run(debug=True)
