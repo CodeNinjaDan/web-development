@@ -26,6 +26,7 @@ Bootstrap5(app)
 
 MOVIE_API_KEY = os.getenv("TMDB_API_KEY")
 MOVIE_DB_SEARCH_URL = "https://api.themoviedb.org/3/search/movie"
+MOVIE_API_URL = "https://api.themoviedb.org/3/movie/{movie_id}"
 MOVIE_DB_IMAGE_URL = "https://image.tmdb.org/t/p/w500"
 
 headers = {
@@ -34,14 +35,15 @@ headers = {
 }
 
 class Movie(db.Model):
+    # nullable=True is redundant because default behaviour is True but is included because of debugging issues
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    year: Mapped[int] = mapped_column(Integer, nullable=False)
-    description: Mapped[str] = mapped_column(String(250), nullable=False)
-    rating: Mapped[float] = mapped_column(Float, nullable=False)
-    ranking: Mapped[int] = mapped_column(Integer, nullable=False)
-    review: Mapped[str] = mapped_column(String(250), nullable=False)
-    img_url: Mapped[str] = mapped_column(String(250), nullable=False)
+    year: Mapped[int] = mapped_column(Integer, nullable=True)
+    description: Mapped[str] = mapped_column(String(250), nullable=True)
+    rating: Mapped[float] = mapped_column(Float, nullable=True)
+    ranking: Mapped[int] = mapped_column(Integer, nullable=True)
+    review: Mapped[str] = mapped_column(String(250), nullable=True)
+    img_url: Mapped[str] = mapped_column(String(250), nullable=True)
 
 # with app.app_context():
 #     db.create_all()
@@ -49,15 +51,21 @@ class Movie(db.Model):
 
 @app.route("/")
 def home():
-    result = db.session.execute(db.select(Movie).order_by(Movie.id))
-    movies = result.scalars()
+    result = db.session.execute(db.select(Movie).order_by(Movie.rating.desc()))
+    movies = result.scalars().all() #Convert to a list
+
+    # Set the rank according to rating - highest rating first
+    for i in range(len(movies)):
+        movies[i].ranking = i + 1
+    db.session.commit()
+
     return render_template("index.html", movies=movies)
 
 
 class RateMovieForm(FlaskForm):
     # Add render_kw{} to set placholders dynamically
     rating = StringField("Your rating out of 10", render_kw={})
-    review = StringField("Your rating", render_kw={})
+    review = StringField("Your review", render_kw={})
     submit = SubmitField("Done")
 
 class AddMovieForm(FlaskForm):
@@ -115,7 +123,7 @@ def get_movie():
     movie_api_id = request.args.get('id')
 
     if movie_api_id:
-        movie_api_url = f"{MOVIE_DB_SEARCH_URL}/{movie_api_id}"
+        movie_api_url = f"https://api.themoviedb.org/3/movie/{movie_api_id}"
         response = requests.get(movie_api_url, headers=headers)
         data = response.json()
         new_movie = Movie(
@@ -127,7 +135,7 @@ def get_movie():
         db.session.add(new_movie)
         db.session.commit()
 
-        return redirect(url_for('home'))
+        return redirect(url_for('edit', id=new_movie.id))
 
 
 if __name__ == '__main__':
